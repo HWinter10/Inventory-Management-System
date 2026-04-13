@@ -1,0 +1,27 @@
+# This YAML file creates a local MySQL container using Docker Compose. This means the 
+# user will not need to have MySQL installed locally. It is designed to read credentials 
+# from .env and expose the DB to the backend on localhost
+
+services: # this is your running container (temporary)
+  mysql:
+    image: mysql:8.0
+    container_name: inventory-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend
+
+volumes:  # this is your persistence storage managed by Docker (perminent)
+  mysql_data:
+
+networks: # this is your private communication layer talking between the layers
+  backend:
+    driver: bridge
+

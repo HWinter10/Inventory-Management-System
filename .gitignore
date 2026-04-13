@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment Variables (important for database pswrd protection) ###
+.env
+.env.*
+*.env
