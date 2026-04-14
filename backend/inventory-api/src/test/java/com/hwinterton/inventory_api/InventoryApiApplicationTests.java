@@ -1,10 +1,10 @@
-package com.hwinterton.inventory_management_system;
+package com.hwinterton.inventory_api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class InventoryManagementSystemApplicationTests {
+class InventoryApiApplicationTests {
 
 	@Test
 	void contextLoads() {

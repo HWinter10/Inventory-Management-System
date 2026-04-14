@@ -31,11 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-### Docker Secret Environment Variables ###
-.env
-.env.*
-*.env
-
-### Spring Boot Secret Environment Variables ###
-application-local.properties
