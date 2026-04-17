@@ -2,7 +2,7 @@
 
 ## User
 ### Fields:
-- id - integer - primary key - auto generated
+- id - Long - primary key - auto generated
 - username - string - unique
 - passwordHash - string
 - role - enum
