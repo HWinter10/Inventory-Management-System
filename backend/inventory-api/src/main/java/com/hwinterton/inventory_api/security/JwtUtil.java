@@ -27,12 +27,10 @@ public class JwtUtil {
         this.jwtSecret = jwtSecret;
         this.jwtExpiration = jwtExpiration;
     }
-
     // Method to create hmac signing key from configured secret
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
-
     // Method to create signed token containing username and role with issued and expiration times
     public String generateToken(String username, Role role) {
         Date now = new Date();
@@ -46,7 +44,6 @@ public class JwtUtil {
                 .signWith(getSigningKey())
                 .compact();
     }
-
     // Method to parse token claims after signature verification
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
@@ -55,12 +52,10 @@ public class JwtUtil {
                 .parseSignedClaims(token)
                 .getPayload();
     }
-
     // Method to return username stored in token subject claim
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
-
     // Method to return true when token correctly signed and not expired
     public boolean isTokenValid(String token) {
         try {
