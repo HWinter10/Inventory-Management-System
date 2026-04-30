@@ -7,7 +7,7 @@ Purpose: this class checks for JWT tokens and extracts username, then passes the
 Dependencies needed:
 - JwtUtil, UserDetailsServiceImpl
 
-Methods:
+Pseudocode:
   doFilterInternal(request, response, filterChain):
     - ret Authorization header from request 
         - if header missing OR does not start with "Bearer " do nothing, continue request
@@ -21,10 +21,8 @@ Methods:
     - continue request to let spring decides if authorized
 */
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,7 +30,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
