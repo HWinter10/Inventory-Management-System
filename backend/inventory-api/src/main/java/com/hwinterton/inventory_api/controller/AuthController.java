@@ -1,28 +1,43 @@
 package com.hwinterton.inventory_api.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hwinterton.inventory_api.dto.LoginRequest;
+import com.hwinterton.inventory_api.dto.LoginResponse;
 import com.hwinterton.inventory_api.service.AuthService;
 
-/*
-Purpose:
-- expose authentication endpoints to the frontend
+import jakarta.validation.Valid;
 
-Pseudocode:
-- receive HTTP authentication requests
-- pass login data to AuthService
-- return authentication responses back to the client
-*/
 
+/**
+ * Exposes authentication endpoints to frontend
+ * 
+ * Delegates all business logic to AuthService
+ */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
     // controller dependency field used to pass authentication work to AuthService
     private final AuthService authService;
 
     // constructor for passing AuthService into controller
     public AuthController(AuthService authService) {
         this.authService = authService;
+    }
+
+    /**
+     * Receives login requests from frontend and returns JWT login data
+     * 
+     * @param request login from frontend
+     * @return JWT login response containing token and user information
+     */
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 }
