@@ -1,6 +1,3 @@
-// User is our base object here, with this being anyone from the owner to staff members. We
-// create the user table using JPA and have it autogenerate ids, then we allow a user to set up and 
-// retreive other users using the auto generated getter and setters libraries in Lombok.
 package com.hwinterton.inventory_api.model;
 
 import jakarta.persistence.Column;
@@ -13,6 +10,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+// User is our base object here, with this being anyone from the owner to staff members. We
+// create the user table using JPA and have it autogenerate ids, then we allow a user to set up and 
+// retreive other users using the auto generated getter and setters libraries in Lombok.
 
 @Data // Lombok: auto generates getters and setters for all field
 @NoArgsConstructor // Lombok: auto generates no-args contructor required by JPA

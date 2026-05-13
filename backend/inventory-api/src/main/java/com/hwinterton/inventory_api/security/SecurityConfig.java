@@ -1,9 +1,27 @@
 package com.hwinterton.inventory_api.security;
 
+import java.util.List;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 /*
-Purpose: configured Spring Security for endpoint access, CORS, database-backed users,
-         password verification, and JWT filtering. This essentially helps tell Spring
-         to run these congifs before it runs its default security rules. 
+Purpose:
+- configure Spring Security for endpoint access rules, CORS, database-backed authentication,
+  password verification, and JWT request filtering
 
 Dependencies:
 - JwtAuthFilter
@@ -25,8 +43,8 @@ Pseudocode:
             - not needed for stateless API requests
 
         - register authentication provider
-            - use UderDetailsServiceImpl to load users from database
-            - use PasswordEncoder to verify password hashed
+            - use UserDetailsServiceImpl to load users from database
+            - use PasswordEncoder to verify password hashes
 
         - register JwtAuthFilter
             - run before UsernamePasswordAuthenticationFilter
@@ -38,7 +56,7 @@ Pseudocode:
         - create DaoAuthenticationProvider
         - set UserDetailsServiceImpl
         - set PasswordEncoder
-        - retunr provider
+        - return provider
 
     corsConfigurationSource():
         - allow frontend origin
@@ -47,22 +65,6 @@ Pseudocode:
         - register CORS config for /api/**
 
 */
-
-import java.util.List;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -89,7 +91,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/health").permitAll()
+                .requestMatchers("/api/health", "/api/auth/login").permitAll()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
@@ -119,4 +121,10 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/api/**", config);
         return source;
     }
+
+    // Method to expose Spring AuthenticationManager so AuthService can verify login credentials
+    @Bean
+    public AuthenticationManager authenticationManager (AuthenticationConfiguration config) throws Exception{
+        return config.getAuthenticationManager();
+        }
 }
