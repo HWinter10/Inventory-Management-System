@@ -11,57 +11,39 @@ import com.hwinterton.inventory_api.model.User;
 import com.hwinterton.inventory_api.repository.UserRepository;
 import com.hwinterton.inventory_api.security.JwtUtil;
 
-/*
-Purpose:
-- handle the login workflow by verifying credentials, loading the user, and returning JWT login data
-
-Dependencies:
-- AuthenticationManager
-- UserRepository
-- JwtUtil
-- LoginRequest DTO
-- LoginResponse DTO
-
-Pseudocode:
-  login(LoginRequest request):
-    - receive LoginRequest from controller
-    - pass request username and password to AuthenticationManager
-        - if credentials are invalid, Spring throws an authentication exception
-    - load user from UserRepository by username
-        - if user is not found, throw UsernameNotFoundException
-    - generate JWT using JwtUtil with username and role
-    - build LoginResponse containing:
-        - token
-        - username
-        - role
-        - mustChangePassword
-    - return LoginResponse to controller
-*/
-
+/**
+ * Handles authentication workflows including credential verification and JWT response generation.
+ * 
+ * <p>Coordinated Spring Security authentication, user retrieval, and token generation before
+ * returning login response data.</p>
+ */
 @Service // tells Spring to manage this class as a service-layer bean
 public class AuthService {
 
-    // the following fields hold references to the objects AuthService needs.
-    // in plain Java, I might create them myself like: JwtUtil jwtUtil = new JwtUtil();
-    // but in Spring, I do not create them manually since Spring creates the objects 
-    // and gives them to this class through the constructor (done behind the scenes).
-    // this is one example of IoC (Inversion of control) 
+    // service dependency fields
     private final AuthenticationManager authenticationManager; 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    // constructor injection: Spring provides dependencies when AuthService is created
-    public AuthService(
-        AuthenticationManager authenticationManager, 
-        UserRepository userRepository,
-        JwtUtil jwtUtil
-    ) {
+    // constructor used by Spring to inject service dependencies
+    public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository, JwtUtil jwtUtil) {
             this.authenticationManager = authenticationManager;
             this.userRepository = userRepository;
             this.jwtUtil = jwtUtil;
     }
 
-    // method to authenticate login request and return data to frontend 
+    /**
+     * Authenticates login credentials and returns JWT login response data.
+     * 
+     * Authentication Flow:
+     * 1. Verify credentials through Spring Security
+     * 2. Load authenticated user from database
+     * 3. Generate JWT token
+     * 4. Return login response DTO
+     * 
+     * @param request login credentials from the frontend
+     * @return authenticated login response containing JWT and user information
+     */
     public LoginResponse login(LoginRequest request){
         // verifies username/password combo, if invalid Spring auto throws exception
         authenticationManager.authenticate(
