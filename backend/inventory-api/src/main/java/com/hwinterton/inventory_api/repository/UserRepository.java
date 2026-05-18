@@ -15,6 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long>{
         // findAll(),
         // deleteById(id),
         // existsById(id)
+        // count() -- can be used on first run setup to help active the process
         
     // optional means results might be empty which forces the caller to handle
     // such cases where no user exists with that username
