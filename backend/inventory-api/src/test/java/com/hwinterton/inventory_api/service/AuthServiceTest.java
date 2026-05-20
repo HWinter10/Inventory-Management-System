@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.never;
@@ -55,7 +56,7 @@ public class AuthServiceTest {
         when(userRepository.findByUsername("owner"))
                 .thenReturn(Optional.of(user));
 
-        when(jwtUtil.generateToken("owner", Role.OWNER))
+        when(jwtUtil.generateToken("owner", Role.OWNER, false))
                 .thenReturn("fake-jwt-token");
             
         LoginResponse response = authService.login(request);
@@ -67,7 +68,7 @@ public class AuthServiceTest {
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userRepository).findByUsername("owner");
-        verify(jwtUtil).generateToken("owner", Role.OWNER);
+        verify(jwtUtil).generateToken("owner", Role.OWNER, false);
     }
 
     @Test
@@ -81,7 +82,7 @@ public class AuthServiceTest {
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userRepository, never()).findByUsername(any());
-        verify(jwtUtil, never()).generateToken(any(), any());
+        verify(jwtUtil, never()).generateToken(any(), any(), anyBoolean());
     }
 
 }

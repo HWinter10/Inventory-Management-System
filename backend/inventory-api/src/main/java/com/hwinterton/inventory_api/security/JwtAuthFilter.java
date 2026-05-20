@@ -9,11 +9,13 @@ Dependencies needed:
 
 Pseudocode:
   doFilterInternal(request, response, filterChain):
-    - ret Authorization header from request 
+    - get Authorization header from request 
         - if header missing OR does not start with "Bearer " do nothing, continue request
     - extract token by removing "Bearer " prefix
     - extract username from token using JwtUtil
         - if username is null do nothing, continue request
+    - extract mustChangePassword from token using JwtUtil
+        - if true 
     - validate token
         - if invalid do nothing, continue request
     - load user by username

@@ -15,12 +15,20 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
+/**
+ * Utility class for creating and reading JWT authentication tokens.
+ * 
+ * <p>Stores username, role, and password-change status in token so that request filters can
+ * make authentication and access control decisions without querying the database on every request</p>
+ */
 @Component
 public class JwtUtil {
 
+    // dependency fields
     private final String jwtSecret;
     private final long jwtExpiration;
 
+    // constructor injection
     public JwtUtil(
             @Value("${jwt.secret}") String jwtSecret,
             @Value("${jwt.expiration}") long jwtExpiration) {
@@ -31,14 +39,15 @@ public class JwtUtil {
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
-    // Method to create signed token containing username and role with issued and expiration times
-    public String generateToken(String username, Role role) {
+    // Method to create signed token containing username, role, and mustChangePassword with issued and expiration times
+    public String generateToken(String username, Role role, boolean mustChangePassword) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
                 .subject(username)
                 .claim("role", role.name())
+                .claim("mustChangePassword", mustChangePassword)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
@@ -55,6 +64,10 @@ public class JwtUtil {
     // Method to return username stored in token subject claim
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
+    }
+    // Method to return mustChangePassword in token subject claim
+    public boolean extractMustChangePassword(String token) {
+        return extractAllClaims(token).get("mustChangePassword", Boolean.class);
     }
     // Method to return true when token correctly signed and not expired
     public boolean isTokenValid(String token) {

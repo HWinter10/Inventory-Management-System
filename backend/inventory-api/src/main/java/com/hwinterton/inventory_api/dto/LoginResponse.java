@@ -1,29 +1,16 @@
 package com.hwinterton.inventory_api.dto;
 
-/*
-Purpose:
-- define the data shape returned to the frontend after a successful login
-
-Dependencies:
-- none
-
-Pseudocode:
-- store the JWT created by the backend
-- store the username for frontend display or state
-- store the user's role for frontend permission decisions
-- store whether the user must change their temporary password
-
-Record Notes:
-- Java records automatically generate:
-    - private final fields
-    - constructor
-    - accessors/getters
-    - equals()
-    - hashCode()
-    - toString()
-- records work well for DTOs because DTOs should remain lightweight and immutable
-*/
-
+/**
+ * DTO returned after a successful authentication workflow.
+ *
+ * <p>Used after login and password change because both workflows return
+ * the same authentication response data.</p>
+ *
+ * @param token JWT used for authenticated requests
+ * @param username authenticated user's username
+ * @param role authenticated user's role
+ * @param mustChangePassword whether the user must change their temporary password
+ */
 public record LoginResponse(
     String token, 
     String username, 
