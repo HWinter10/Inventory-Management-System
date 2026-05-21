@@ -1,6 +1,7 @@
 package com.hwinterton.inventory_api.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,9 +50,19 @@ public class AuthController {
      */
     @PostMapping("/change-password")
     public ResponseEntity<LoginResponse> changePassword(
+<<<<<<< HEAD
             @Valid @RequestBody ChangePasswordRequest request) {
 
         return ResponseEntity.ok(authService.changePassword(request));
     }
    
+=======
+            @Valid @RequestBody ChangePasswordRequest request,
+            Authentication authentication) {
+
+        return ResponseEntity.ok(
+                authService.changePassword(authentication.getName(), request)
+        );
+    }
+>>>>>>> 6c5df33 (refactor: pass username from Authentication in controller to AuthService changePassword)
 }
