@@ -1,27 +1,4 @@
 package com.hwinterton.inventory_api.security;
-/* 
-Purpose: this class checks for JWT tokens and extracts username, then passes the info to 
-        Spring. it passes along invalid requests as well because its main purpose is to try
-        and authenticate, not to block requests. invalid requests just continue as unauthenticated
-
-Dependencies needed:
-- JwtUtil, UserDetailsServiceImpl
-
-Pseudocode:
-  doFilterInternal(request, response, filterChain):
-    - get Authorization header from request 
-        - if header missing OR does not start with "Bearer " do nothing, continue request
-    - extract token by removing "Bearer " prefix
-    - extract username from token using JwtUtil
-        - if username is null do nothing, continue request
-    - extract mustChangePassword from token using JwtUtil
-        - if true 
-    - validate token
-        - if invalid do nothing, continue request
-    - load user by username
-    - set authentication using UserDetails
-    - continue request to let spring decides if authorized
-*/
 
 import java.io.IOException;
 
@@ -37,6 +14,30 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * Handles JWT authentication for incoming API requests.
+ * 
+ * <p>Checks requests for Bearer tokens, validates tokens using JwtUtil,
+ * loads matching user details, and passes authenticated user information
+ * into Spring Security.</p>
+ * 
+ * <p>This filter attempts authentication but does not make final authorization
+ * decisions. Requests without valid tokens continue as unauthenticated, and
+ * Spring Security later decides whether the endpoint should allow access.</p>
+ * 
+ * Authentication Flow:
+ * <pre>
+ * 1. Read Authorization header from request
+ * 2. Check for Bearer token
+ * 3. Extract JWT token
+ * 4. Extract username from token
+ * 5. Validate token
+ * 6. Load user details
+ * 7. Create Spring Security authentication object
+ * 8. Store authentication in SecurityContext
+ * 9. Continue request through filter chain
+ * </pre>
+ */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
