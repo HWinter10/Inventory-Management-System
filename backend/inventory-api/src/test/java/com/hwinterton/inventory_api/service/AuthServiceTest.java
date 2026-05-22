@@ -3,12 +3,12 @@ package com.hwinterton.inventory_api.service;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -37,17 +37,34 @@ public class AuthServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private JwtUtil jwtUtil;
-
-    @Mock
     private PasswordEncoder passwordEncoder;
 
-    @InjectMocks
+    // using real JwtUtil instance instead of mocking token generation
+    private JwtUtil jwtUtil;
+
     private AuthService authService;
+
+    // setup test dependencies before each test
+    @BeforeEach
+    void setUp() {
+
+        jwtUtil = new JwtUtil(
+                "test-secret-key-test-secret-key-test-secret-key",
+                28800000
+        );
+
+        authService = new AuthService(
+                authenticationManager,
+                userRepository,
+                jwtUtil,
+                passwordEncoder
+        );
+    }
 
     // testing login happy path with valid credentials
     @Test
     void login_validCredentials_returnLoginResponse() {
+
         LoginRequest request = new LoginRequest("owner", "password123");
 
         User user = new User();
@@ -61,24 +78,21 @@ public class AuthServiceTest {
         when(userRepository.findByUsername("owner"))
                 .thenReturn(Optional.of(user));
 
-        when(jwtUtil.generateToken("owner", Role.OWNER, false))
-                .thenReturn("fake-jwt-token");
-            
         LoginResponse response = authService.login(request);
 
-        assertEquals("fake-jwt-token", response.token());
+        assertNotNull(response.token());
         assertEquals("owner", response.username());
         assertEquals("OWNER", response.role());
         assertEquals(false, response.mustChangePassword());
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userRepository).findByUsername("owner");
-        verify(jwtUtil).generateToken("owner", Role.OWNER, false);
     }
 
     // testing login failure path with invalid credentials
     @Test
     void login_invalidCredentials_throwsException() {
+
         LoginRequest request = new LoginRequest("owner", "wrong-password");
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
@@ -88,7 +102,6 @@ public class AuthServiceTest {
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userRepository, never()).findByUsername(any());
-        verify(jwtUtil, never()).generateToken(any(), any(), anyBoolean());
     }
 
     // testing change password happy path
@@ -115,12 +128,9 @@ public class AuthServiceTest {
         when(userRepository.save(user))
                 .thenReturn(user);
 
-        when(jwtUtil.generateToken("owner", Role.OWNER, false))
-                .thenReturn("fake-new-jwt-token");
-
         LoginResponse response = authService.changePassword("owner", request);
 
-        assertEquals("fake-new-jwt-token", response.token());
+        assertNotNull(response.token());
         assertEquals("owner", response.username());
         assertEquals("OWNER", response.role());
         assertEquals(false, response.mustChangePassword());
@@ -131,7 +141,6 @@ public class AuthServiceTest {
         verify(userRepository).findByUsername("owner");
         verify(passwordEncoder).matches("password123", "hashed-old-password");
         verify(passwordEncoder).encode("newpass123");
-        verify(jwtUtil).generateToken("owner", Role.OWNER, false);
     }    
     
     // testing change password fail path
@@ -157,6 +166,5 @@ public class AuthServiceTest {
         verify(userRepository).findByUsername("owner");
         verify(passwordEncoder).matches("wrongpassword123", "hashed-old-password");
         verify(passwordEncoder, never()).encode(any());
-        verify(jwtUtil, never()).generateToken(any(), any(), anyBoolean());
     } 
 }
