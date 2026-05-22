@@ -3,7 +3,6 @@ package com.hwinterton.inventory_api.service;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -98,14 +97,7 @@ public class AuthService {
      * @param request current and new password values
      * @return authenticated login response containing a new JWT and updated user information
      */
-<<<<<<< HEAD
-    public LoginResponse changePassword(ChangePasswordRequest request) {
-
-            // username comes from authenticated security context, not request body
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-=======
     public LoginResponse changePassword(String username, ChangePasswordRequest request) {
->>>>>>> 6c5df33 (refactor: pass username from Authentication in controller to AuthService changePassword)
 
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));

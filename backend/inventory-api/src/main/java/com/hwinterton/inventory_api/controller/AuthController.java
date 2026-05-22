@@ -50,13 +50,6 @@ public class AuthController {
      */
     @PostMapping("/change-password")
     public ResponseEntity<LoginResponse> changePassword(
-<<<<<<< HEAD
-            @Valid @RequestBody ChangePasswordRequest request) {
-
-        return ResponseEntity.ok(authService.changePassword(request));
-    }
-   
-=======
             @Valid @RequestBody ChangePasswordRequest request,
             Authentication authentication) {
 
@@ -64,5 +57,4 @@ public class AuthController {
                 authService.changePassword(authentication.getName(), request)
         );
     }
->>>>>>> 6c5df33 (refactor: pass username from Authentication in controller to AuthService changePassword)
 }
