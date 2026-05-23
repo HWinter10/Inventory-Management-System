@@ -39,7 +39,7 @@ public class Product {
     @Column(nullable = false)
     private boolean active = true;
 
-    // many products can belonw to one subcategory
+    // many products can belong to one subcategory
     @ManyToOne
     @JoinColumn(name = "subcategory_id", nullable = false)
     private Subcategory subcategory;
