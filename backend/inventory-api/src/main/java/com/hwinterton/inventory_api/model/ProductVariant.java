@@ -1,7 +1,5 @@
 package com.hwinterton.inventory_api.model;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -43,17 +41,13 @@ public class ProductVariant {
     @Column(name = "display_name", nullable = false)
     private String displayName;
 
-    // selling price for this exact variant
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
-
     // current inventory count for this exact variant
     @Column(name = "quantity_on_hand", nullable = false)
     private int quantityOnHand;
 
     // low stock warning level for this exact variant
-    @Column(name = "reorder_threshold", nullable = false)
-    private int reorderThreshold;
+    @Column(name = "low_stock_threshold", nullable = false)
+    private int lowStockThreshold;
 
     // tracks whether this variant is currently active
     @Column(nullable = false)
