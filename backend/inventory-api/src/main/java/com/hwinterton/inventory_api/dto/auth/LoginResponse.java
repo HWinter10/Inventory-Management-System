@@ -1,4 +1,4 @@
-package com.hwinterton.inventory_api.dto;
+package com.hwinterton.inventory_api.dto.auth;
 
 /**
  * DTO returned after a successful authentication workflow.

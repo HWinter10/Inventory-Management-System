@@ -7,9 +7,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.hwinterton.inventory_api.dto.ChangePasswordRequest;
-import com.hwinterton.inventory_api.dto.LoginRequest;
-import com.hwinterton.inventory_api.dto.LoginResponse;
+import com.hwinterton.inventory_api.dto.auth.ChangePasswordRequest;
+import com.hwinterton.inventory_api.dto.auth.LoginRequest;
+import com.hwinterton.inventory_api.dto.auth.LoginResponse;
 import com.hwinterton.inventory_api.model.User;
 import com.hwinterton.inventory_api.repository.UserRepository;
 import com.hwinterton.inventory_api.security.JwtUtil;

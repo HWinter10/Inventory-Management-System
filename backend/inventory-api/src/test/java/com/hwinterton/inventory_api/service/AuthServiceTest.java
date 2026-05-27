@@ -19,9 +19,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.hwinterton.inventory_api.dto.ChangePasswordRequest;
-import com.hwinterton.inventory_api.dto.LoginRequest;
-import com.hwinterton.inventory_api.dto.LoginResponse;
+import com.hwinterton.inventory_api.dto.auth.ChangePasswordRequest;
+import com.hwinterton.inventory_api.dto.auth.LoginRequest;
+import com.hwinterton.inventory_api.dto.auth.LoginResponse;
 import com.hwinterton.inventory_api.model.Role;
 import com.hwinterton.inventory_api.model.User;
 import com.hwinterton.inventory_api.repository.UserRepository;

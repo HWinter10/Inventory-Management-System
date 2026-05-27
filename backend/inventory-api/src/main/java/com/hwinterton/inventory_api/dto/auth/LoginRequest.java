@@ -1,4 +1,4 @@
-package com.hwinterton.inventory_api.dto;
+package com.hwinterton.inventory_api.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 

@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hwinterton.inventory_api.dto.ChangePasswordRequest;
-import com.hwinterton.inventory_api.dto.LoginRequest;
-import com.hwinterton.inventory_api.dto.LoginResponse;
+import com.hwinterton.inventory_api.dto.auth.ChangePasswordRequest;
+import com.hwinterton.inventory_api.dto.auth.LoginRequest;
+import com.hwinterton.inventory_api.dto.auth.LoginResponse;
 import com.hwinterton.inventory_api.service.AuthService;
 
 import jakarta.validation.Valid;
