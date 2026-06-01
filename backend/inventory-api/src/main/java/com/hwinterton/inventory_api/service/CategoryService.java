@@ -20,9 +20,8 @@ import com.hwinterton.inventory_api.repository.SubcategoryRepository;
  */
 @Service
 public class CategoryService {
-
-    private final SubcategoryRepository subcategoryRepository;
     // dependency fields
+    private final SubcategoryRepository subcategoryRepository;
     private final CategoryRepository categoryRepository;
 
     // construct inject
