@@ -19,4 +19,7 @@ public interface SubcategoryRepository extends JpaRepository<Subcategory, Long> 
 
     // prevent duplicate subcategory names
     boolean existsByNameAndCategory(String name, Category category);
+
+    // to help with checking if cat has subcats before deletion
+    boolean existsByCategory(Category category);
 }
