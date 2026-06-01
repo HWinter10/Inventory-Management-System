@@ -22,4 +22,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // prevent duplicate product names
     boolean existsByName(String name);
+
+    // to help with checking if product has subcategory before deletion
+    boolean existsBySubcategory(Subcategory subcategory);
 }
