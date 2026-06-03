@@ -1,5 +1,8 @@
 package com.hwinterton.inventory_api.dto.variant;
 
+import com.hwinterton.inventory_api.dto.attribute.VariantAttributeResponse;
+import java.util.List;
+
 /**
  * Response DTO for sending product variant data back to the frontend
  * 
@@ -14,6 +17,8 @@ public record ProductVariantResponse(
     String displayName,
     int quantityOnHand,
     int lowStockThreshold,
-    boolean active
+    boolean active,
+
+    List<VariantAttributeResponse> attributes
 ) {
 }
