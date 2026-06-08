@@ -42,6 +42,10 @@ public class AttributeValue {
     @JoinColumn(name = "attribute_type_id", nullable = false)
     private AttributeType attributeType;
 
+    // display order for dropdowns or lists
+    @Column(nullable = false)
+    private int displayOrder;
+
     // tracks whether this attribute value is currently active
     @Column(nullable = false)
     private boolean active = true;
