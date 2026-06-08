@@ -12,12 +12,15 @@ import com.hwinterton.inventory_api.model.AttributeValue;
 import com.hwinterton.inventory_api.repository.AttributeTypeRepository;
 import com.hwinterton.inventory_api.repository.AttributeValueRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Service for attribute value business logic.
  *
  * <p>Handles creating, retrieving, and updating attribute values such as
  * Medium, Pink, Vanilla, or Women's.</p>
  */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Service
 public class AttributeValueService {
 
@@ -39,6 +42,8 @@ public class AttributeValueService {
      */
     @Transactional(readOnly = true) // protects workflow as a whole, as in it succeeds or fails as one unit
     public List<AttributeValueResponse> getAllAttributeValues() {
+        log.info("Fetching all attribute values");
+
         return attributeValueRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -53,6 +58,8 @@ public class AttributeValueService {
      */
     @Transactional(readOnly = true) // protects workflow
     public AttributeValueResponse getAttributeValueById(Long id) {
+        log.info("Fetching attribute value with id: {}", id);
+        
         AttributeValue attributeValue = findAttributeValueById(id);
 
         return toResponse(attributeValue);
@@ -66,6 +73,8 @@ public class AttributeValueService {
      */
     @Transactional(readOnly = true) // protects workflow
     public List<AttributeValueResponse> getAttributeValuesByType(Long attributeTypeId) {
+        log.info("Fetching attribute values for attribute type id: {}", attributeTypeId);
+        
         AttributeType attributeType = findAttributeTypeById(attributeTypeId);
 
         return attributeValueRepository.findByAttributeType(attributeType)
@@ -84,9 +93,12 @@ public class AttributeValueService {
      */
     @Transactional // protects workflow
     public AttributeValueResponse createAttributeValue(AttributeValueRequest request) {
+        log.info("Attempting to create attribute value: {} under attribute type id: {}", request.value(), request.attributeTypeId());
+        
         AttributeType attributeType = findAttributeTypeById(request.attributeTypeId());
 
         if (attributeValueRepository.existsByAttributeTypeAndValue(attributeType, request.value())) {
+            log.warn("Duplicate attribute value attempted: {} under attribute type id: {}", request.value(), request.attributeTypeId());
             throw new IllegalArgumentException("Attribute value already exists under this attribute type");
         }
 
@@ -96,6 +108,7 @@ public class AttributeValueService {
         attributeValue.setDisplayOrder(request.displayOrder());
 
         AttributeValue savedAttributeValue = attributeValueRepository.save(attributeValue);
+        log.info("Attribute value created successfully with id: {}", savedAttributeValue.getId());
 
         return toResponse(savedAttributeValue);
     }
@@ -112,6 +125,8 @@ public class AttributeValueService {
      */
     @Transactional // protects workflow
     public AttributeValueResponse updateAttributeValue(Long id, AttributeValueRequest request) {
+        log.info("Attempting to update attribute value with id: {}", id);
+
         AttributeValue attributeValue = findAttributeValueById(id);
         AttributeType attributeType = findAttributeTypeById(request.attributeTypeId());
 
@@ -120,6 +135,7 @@ public class AttributeValueService {
 
         if ((typeChanged || valueChanged)
                 && attributeValueRepository.existsByAttributeTypeAndValue(attributeType, request.value())) {
+            log.warn("Duplicate attribute value attempted during update: {} under attribute type id: {}", request.value(), request.attributeTypeId());
             throw new IllegalArgumentException("Attribute value already exists under this attribute type");
         }
 
@@ -128,6 +144,7 @@ public class AttributeValueService {
         attributeValue.setDisplayOrder(request.displayOrder());
 
         AttributeValue updatedAttributeValue = attributeValueRepository.save(attributeValue);
+        log.info("Attribute value updated successfully with id: {}", updatedAttributeValue.getId());
 
         return toResponse(updatedAttributeValue);
     }
@@ -135,13 +152,19 @@ public class AttributeValueService {
     // Method: finds an attribute type once so the not-found logic stays consistent.
     private AttributeType findAttributeTypeById(Long id) {
         return attributeTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Attribute type not found"));
+                .orElseThrow(() -> {
+                    log.warn("Attribute type not found with id: {}", id);
+                    return new RuntimeException("Attribute type not found");
+                });
     }
 
     // Method: finds an attribute value once so the not-found logic stays consistent.
     private AttributeValue findAttributeValueById(Long id) {
         return attributeValueRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Attribute value not found"));
+                .orElseThrow(() -> {
+                    log.warn("Attribute value not found with id: {}", id);              
+                    return new RuntimeException("Attribute value not found");
+                });
     }
 
     // Method: converts the AttributeValue entity into the response shape used by the frontend.

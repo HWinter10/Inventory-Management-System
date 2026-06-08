@@ -14,12 +14,15 @@ import com.hwinterton.inventory_api.model.User;
 import com.hwinterton.inventory_api.repository.UserRepository;
 import com.hwinterton.inventory_api.security.JwtUtil;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Handles authentication workflows including credential verification and JWT response generation.
  * 
  * <p>Coordinated Spring Security authentication, user retrieval, and token generation before
  * returning login response data.</p>
  */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Service // tells Spring to manage this class as a service-layer bean
 public class AuthService {
 
@@ -55,14 +58,19 @@ public class AuthService {
      * @return authenticated login response containing JWT and user information
      */
     public LoginResponse login(LoginRequest request){
-        
+        log.info("Login attempt for username: {}", request.username());
         // verifies username/password combo, if invalid Spring auto throws exception
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                request.username(), 
-                request.password()
-            )
-        );
+        try {
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    request.username(),
+                    request.password()
+                )
+            );
+        } catch (BadCredentialsException e) {
+            log.warn("Failed login attempt for username: {}", request.username());
+            throw e;
+        }
         // loads FULL user entity from database after authentication, including mustChangePassword
         User user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found")
@@ -73,6 +81,7 @@ public class AuthService {
             user.getRole(),
             user.isMustChangePassword()
         );
+        log.info("Login successful for username: {}", user.getUsername());
         // builds and returns DTO to frontend
         return new LoginResponse(
             token,
@@ -98,12 +107,13 @@ public class AuthService {
      * @return authenticated login response containing a new JWT and updated user information
      */
     public LoginResponse changePassword(String username, ChangePasswordRequest request) {
-
+            log.info("Password change attempt for username: {}", username);
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             // verifies current password against stored BCrypt hash
             if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+                log.warn("Incorrect current password provided for username: {}", username);
                 throw new BadCredentialsException("Current password is incorrect");
             }
 
@@ -118,7 +128,7 @@ public class AuthService {
                     savedUser.getRole(),
                     savedUser.isMustChangePassword()
             );
-
+            log.info("Password changed successfully for username: {}", savedUser.getUsername());
             return new LoginResponse(
                     token,
                     savedUser.getUsername(),

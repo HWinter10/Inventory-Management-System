@@ -9,11 +9,19 @@ import com.hwinterton.inventory_api.dto.variant.ProductVariantRequest;
 import com.hwinterton.inventory_api.dto.variant.ProductVariantResponse;
 import com.hwinterton.inventory_api.model.Product;
 import com.hwinterton.inventory_api.model.ProductVariant;
-import com.hwinterton.inventory_api.model.VariantAttribute;
 import com.hwinterton.inventory_api.repository.ProductRepository;
 import com.hwinterton.inventory_api.repository.ProductVariantRepository;
 import com.hwinterton.inventory_api.repository.VariantAttributeRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Service for product variant business logic.
+ *
+ * <p>Handles variant retrieval, creation, updates, soft deletion, low stock
+ * lookups, and conversion of attached variant attributes into response DTOs.</p>
+ */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Service
 public class ProductVariantService {
 
@@ -69,6 +77,7 @@ public class ProductVariantService {
      * @return list of active product variants as response DTOs
      */
     public List<ProductVariantResponse> getAllVariants() {
+        log.info("Fetching all active product variants");
         return productVariantRepository.findByActive(true)
             .stream()
             .map(this::toResponse)
@@ -83,6 +92,7 @@ public class ProductVariantService {
      * @throws RuntimeException if variant is not found
      */
     public ProductVariantResponse getVariantById(Long id) {
+        log.info("Fetching product variant with id: {}", id);
         ProductVariant variant = productVariantRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Product variant not found"));
 
@@ -97,6 +107,7 @@ public class ProductVariantService {
      * @throws RuntimeException if product is not found
      */
     public List<ProductVariantResponse> getVariantsByProduct(Long productId) {
+        log.info("Fetching variants for product id: {}", productId);
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
@@ -114,6 +125,7 @@ public class ProductVariantService {
      * @throws RuntimeException if product is not found
      */
     public ProductVariantResponse createVariant(ProductVariantRequest request) {
+        log.info("Attempting to create variant with SKU: {} for product id: {}", request.sku(), request.productId());
         Product product = productRepository.findById(request.productId())
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
@@ -126,7 +138,7 @@ public class ProductVariantService {
         variant.setActive(true);
 
         ProductVariant savedVariant = productVariantRepository.save(variant);
-
+        log.info("Product variant created successfully with id: {}", savedVariant.getId());
         return toResponse(savedVariant);
     }
 
@@ -139,6 +151,7 @@ public class ProductVariantService {
      * @throws RuntimeException if variant or product is not found
      */
     public ProductVariantResponse updateVariant(Long id, ProductVariantRequest request) {
+        log.info("Attempting to update product variant with id: {}", id);
         ProductVariant variant = productVariantRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Product variant not found"));
 
@@ -152,7 +165,7 @@ public class ProductVariantService {
         variant.setLowStockThreshold(request.lowStockThreshold());
 
         ProductVariant updatedVariant = productVariantRepository.save(variant);
-
+        log.info("Product variant updated successfully with id: {}", updatedVariant.getId());
         return toResponse(updatedVariant);
     }
 
@@ -163,11 +176,12 @@ public class ProductVariantService {
      * @throws RuntimeException if variant is not found
      */
     public void deleteVariant(Long id) {
+        log.info("Attempting to soft delete product variant with id: {}", id);
         ProductVariant variant = productVariantRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Product variant not found"));
-
         variant.setActive(false);
         productVariantRepository.save(variant);
+        log.info("Product variant soft deleted successfully with id: {}", id);
     }
 
     /**
@@ -176,6 +190,7 @@ public class ProductVariantService {
      * @return list of low stock variants as response DTOs
      */
     public List<ProductVariantResponse> getLowStockVariants() {
+        log.info("Fetching all low stock variants");
         return productVariantRepository.findBelowThreshold()
             .stream()
             .map(this::toResponse)

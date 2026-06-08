@@ -11,11 +11,14 @@ import com.hwinterton.inventory_api.model.User;
 import com.hwinterton.inventory_api.repository.AuditLogRepository;
 import com.hwinterton.inventory_api.repository.UserRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Service for audit log business logic.
  *
  * <p>Handles recording important system actions and retrieving audit history.</p>
  */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Service
 public class AuditLogService {
 
@@ -43,12 +46,15 @@ public class AuditLogService {
      */
     @Transactional // protects workflow as a whole, as in it succeeds or fails as one unit
     public AuditLogResponse logAction(Long actorUserId, String action, String details) {
-        AuditLog auditLog = new AuditLog();
+        log.info("Recording audit log action: {} for user id: {}", action, actorUserId);
+                AuditLog auditLog = new AuditLog();
 
         if (actorUserId != null) {
             User actorUser = userRepository.findById(actorUserId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
+                    .orElseThrow(() -> {
+                        log.warn("Actor user not found with id: {}", actorUserId);
+                        return new RuntimeException("User not found");
+                    });
             auditLog.setActorUser(actorUser);
         }
 
@@ -56,7 +62,8 @@ public class AuditLogService {
         auditLog.setDetails(details);
 
         AuditLog savedAuditLog = auditLogRepository.save(auditLog);
-
+        log.info("Audit log recorded successfully with id: {}", savedAuditLog.getId());
+        
         return toResponse(savedAuditLog);
     }
 
@@ -68,6 +75,8 @@ public class AuditLogService {
      */
     @Transactional(readOnly = true) // protected workflow
     public Page<AuditLogResponse> getAuditLogs(Pageable pageable) {
+        log.info("Fetching audit logs, page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        
         return auditLogRepository.findAllByOrderByCreatedAtDesc(pageable)
                 .map(this::toResponse);
     }

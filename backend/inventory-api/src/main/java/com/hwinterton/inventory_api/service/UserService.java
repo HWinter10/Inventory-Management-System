@@ -13,12 +13,15 @@ import com.hwinterton.inventory_api.dto.user.UserResponse;
 import com.hwinterton.inventory_api.model.User;
 import com.hwinterton.inventory_api.repository.UserRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Service for user management business logic.
  *
  * <p>Handles user lookup, creation, role updates, account activation status,
  * and temporary password reset workflows.</p>
  */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Service
 public class UserService {
 
@@ -40,6 +43,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
+        log.info("Fetching all users");
         return userRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -54,6 +58,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
+        log.info("Fetching user with id: {}", id);
         User user = findUserById(id);
 
         return toResponse(user);
@@ -70,6 +75,7 @@ public class UserService {
      */
     @Transactional
     public UserPasswordResponse createUser(UserRequest request) {
+        log.info("Attempting to create user with username: {}", request.username());
         if (userRepository.existsByUsername(request.username())) {
             throw new IllegalArgumentException("Username already exists");
         }
@@ -84,7 +90,8 @@ public class UserService {
         user.setActive(true);
 
         User savedUser = userRepository.save(user);
-
+        log.info("User created successfully with id: {}", savedUser.getId());
+        
         return new UserPasswordResponse(
                 savedUser.getId(),
                 savedUser.getUsername(),
@@ -103,10 +110,12 @@ public class UserService {
      */
     @Transactional
     public UserResponse updateUser(Long id, UserRequest request) {
+        log.info("Attempting to update user with id: {}", id);
         User user = findUserById(id);
 
         if (!user.getUsername().equals(request.username())
                 && userRepository.existsByUsername(request.username())) {
+            log.warn("Duplicate username attempted during update: {}", request.username());
             throw new IllegalArgumentException("Username already exists");
         }
 
@@ -114,7 +123,8 @@ public class UserService {
         user.setRole(request.role());
 
         User updatedUser = userRepository.save(user);
-
+        log.info("User updated successfully with id: {}", updatedUser.getId());
+        
         return toResponse(updatedUser);
     }
 
@@ -129,12 +139,14 @@ public class UserService {
      */
     @Transactional
     public UserResponse deactivateUser(Long id) {
+        log.info("Attempting to deactivate user with id: {}", id);
         User user = findUserById(id);
 
         user.setActive(false);
 
         User updatedUser = userRepository.save(user);
-
+        log.info("User deactivated successfully with id: {}", id);
+    
         return toResponse(updatedUser);
     }
 
@@ -146,12 +158,14 @@ public class UserService {
      */
     @Transactional
     public UserResponse reactivateUser(Long id) {
+        log.info("Attempting to reactivate user with id: {}", id);
         User user = findUserById(id);
 
         user.setActive(true);
 
         User updatedUser = userRepository.save(user);
-
+        log.info("User reactivated successfully with id: {}", id);
+        
         return toResponse(updatedUser);
     }
 
@@ -166,6 +180,8 @@ public class UserService {
      */
     @Transactional
     public UserPasswordResponse resetPassword(Long id) {
+        log.info("Attempting to reset password for user with id: {}", id);
+        
         User user = findUserById(id);
 
         String temporaryPassword = generateTemporaryPassword();
@@ -174,7 +190,8 @@ public class UserService {
         user.setMustChangePassword(true);
 
         User updatedUser = userRepository.save(user);
-
+        log.info("Password reset successfully for user with id: {}", id);
+        
         return new UserPasswordResponse(
                 updatedUser.getId(),
                 updatedUser.getUsername(),

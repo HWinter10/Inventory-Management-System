@@ -10,12 +10,15 @@ import com.hwinterton.inventory_api.dto.attribute.AttributeTypeResponse;
 import com.hwinterton.inventory_api.model.AttributeType;
 import com.hwinterton.inventory_api.repository.AttributeTypeRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Service for attribute type business logic.
  *
  * <p>Handles creating, retrieving, and updating attribute types such as
  * Size, Color, Flavor, or Gender.</p>
  */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Service
 public class AttributeTypeService {
 
@@ -32,6 +35,7 @@ public class AttributeTypeService {
      */
     @Transactional(readOnly = true) // protects workflow as a whole, as in it succeeds or fails as one unit
     public List<AttributeTypeResponse> getAllAttributeTypes() {
+        log.info("Fetching all attribute types");
         return attributeTypeRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -46,6 +50,7 @@ public class AttributeTypeService {
      */
     @Transactional(readOnly = true) // protected workflow
     public AttributeTypeResponse getAttributeTypeById(Long id) {
+        log.info("Fetching attribute type with id: {}", id);
         AttributeType attributeType = findAttributeTypeById(id);
 
         return toResponse(attributeType);
@@ -61,7 +66,9 @@ public class AttributeTypeService {
      */
     @Transactional // protected workflow
     public AttributeTypeResponse createAttributeType(AttributeTypeRequest request) {
+        log.info("Attempting to create attribute type with name: {}", request.name());
         if (attributeTypeRepository.existsByName(request.name())) {
+            log.warn("Duplicate attribute type name attempted: {}", request.name());
             throw new IllegalArgumentException("Attribute type name already exists");
         }
 
@@ -70,7 +77,8 @@ public class AttributeTypeService {
         attributeType.setDescription(request.description());
 
         AttributeType savedAttributeType = attributeTypeRepository.save(attributeType);
-
+        log.info("Attribute type created successfully with id: {}", savedAttributeType.getId());
+        
         return toResponse(savedAttributeType);
     }
 
@@ -86,10 +94,14 @@ public class AttributeTypeService {
      */
     @Transactional // protected workflow
     public AttributeTypeResponse updateAttributeType(Long id, AttributeTypeRequest request) {
+        log.info("Attempting to update attribute type with id: {}", id);
+
         AttributeType attributeType = findAttributeTypeById(id);
 
         if (!attributeType.getName().equals(request.name())
                 && attributeTypeRepository.existsByName(request.name())) {
+
+            log.warn("Duplicate attribute type name attempted during update: {}", request.name());
             throw new IllegalArgumentException("Attribute type name already exists");
         }
 
@@ -97,6 +109,7 @@ public class AttributeTypeService {
         attributeType.setDescription(request.description());
 
         AttributeType updatedAttributeType = attributeTypeRepository.save(attributeType);
+        log.info("Attribute type updated successfully with id: {}", updatedAttributeType.getId());
 
         return toResponse(updatedAttributeType);
     }
@@ -104,7 +117,10 @@ public class AttributeTypeService {
     // Method: finds an attribute type once so the not-found logic stays consistent.
     private AttributeType findAttributeTypeById(Long id) {
         return attributeTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Attribute type not found"));
+                .orElseThrow(() -> {
+                    log.warn("Attribute type not found with id: {}", id);
+                    return new RuntimeException("Attribute type not found");
+                });
     }
 
     // Method: converts the AttributeType entity into the response shape used by the frontend.

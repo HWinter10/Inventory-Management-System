@@ -11,6 +11,15 @@ import com.hwinterton.inventory_api.model.Subcategory;
 import com.hwinterton.inventory_api.repository.ProductRepository;
 import com.hwinterton.inventory_api.repository.SubcategoryRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Service for product business logic.
+ *
+ * <p>Handles product retrieval, creation, updates, and soft deletion while
+ * keeping products connected to their parent subcategories.</p>
+ */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Service
 public class ProductService {
 
@@ -29,7 +38,7 @@ public class ProductService {
      */
     public List<ProductResponse> getAllProducts() {
         List<Product> products = productRepository.findByActive(true);
-
+        log.info("Fetching all active products");
         return products.stream()
             .map(product -> new ProductResponse(
                 product.getId(),
@@ -50,6 +59,7 @@ public class ProductService {
      * @throws RuntimeException if product is not found
      */
     public ProductResponse getProductById(Long id) {
+        log.info("Fetching product with id: {}", id);
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
@@ -72,10 +82,12 @@ public class ProductService {
      * @throws IllegalArgumentException if product name already exists
      */
     public ProductResponse createProduct(ProductRequest request) {
+        log.info("Attempting to create product with name: {}", request.name());
         Subcategory subcategory = subcategoryRepository.findById(request.subcategoryId())
             .orElseThrow(() -> new RuntimeException("Subcategory not found"));
 
         if (productRepository.existsByName(request.name())) {
+            log.warn("Duplicate product name attempted: {}", request.name());
             throw new IllegalArgumentException("Product name already exists");
         }
 
@@ -86,7 +98,7 @@ public class ProductService {
         product.setActive(true);
 
         Product savedProduct = productRepository.save(product);
-
+        log.info("Product created successfully with id: {}", savedProduct.getId());
         return new ProductResponse(
             savedProduct.getId(),
             savedProduct.getName(),
@@ -107,6 +119,7 @@ public class ProductService {
      * @throws IllegalArgumentException if product name already exists under a different product
      */
     public ProductResponse updateProduct(Long id, ProductRequest request) {
+        log.info("Attempting to update product with id: {}", id);
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
@@ -115,6 +128,7 @@ public class ProductService {
 
         if (productRepository.existsByName(request.name())
                 && !product.getName().equals(request.name())) {
+            log.warn("Duplicate product name attempted during update: {}", request.name());
             throw new IllegalArgumentException("Product name already exists");
         }
 
@@ -123,7 +137,7 @@ public class ProductService {
         product.setSubcategory(subcategory);
 
         Product updatedProduct = productRepository.save(product);
-
+        log.info("Product updated successfully with id: {}", updatedProduct.getId());
         return new ProductResponse(
             updatedProduct.getId(),
             updatedProduct.getName(),
@@ -141,10 +155,11 @@ public class ProductService {
      * @throws RuntimeException if product is not found
      */
     public void deleteProduct(Long id) {
+        log.info("Attempting to soft delete product with id: {}", id);
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Product not found"));
-
         product.setActive(false);
         productRepository.save(product);
+        log.info("Product soft deleted successfully with id: {}", id);
     }
 }

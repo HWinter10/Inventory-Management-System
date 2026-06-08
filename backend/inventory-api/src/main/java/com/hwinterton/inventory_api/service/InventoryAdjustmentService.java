@@ -13,12 +13,15 @@ import com.hwinterton.inventory_api.repository.InventoryAdjustmentRepository;
 import com.hwinterton.inventory_api.repository.ProductVariantRepository;
 import com.hwinterton.inventory_api.repository.UserRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Service class responsible for all InventoryAdjustment business logic.
  *
  * <p>Handles recording inventory changes and updating variant quantity on hand.
  * Enforces that variants and users exist before adjustments are applied.</p>
  */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Service
 public class InventoryAdjustmentService {
 
@@ -45,6 +48,7 @@ public class InventoryAdjustmentService {
      * @throws RuntimeException if the variant or user is not found
      */
     public InventoryAdjustmentResponse recordAdjustment(InventoryAdjustmentRequest request, Long performedByUserId) {
+        log.info("Redording inventory adjustment for variant id: {} by user id: {}", request.variantId(), performedByUserId);
         // find the variant
         ProductVariant variant = productVariantRepository.findById(request.variantId())
             .orElseThrow(() -> new RuntimeException("Product variant not found"));
@@ -56,6 +60,7 @@ public class InventoryAdjustmentService {
         // apply the change to quantity on hand
         variant.setQuantityOnHand(variant.getQuantityOnHand() + request.changeAmount());
         productVariantRepository.save(variant);
+        log.info("Quantity on hand updated for variant id: {} New quantity: {}", variant.getId(), variant.getQuantityOnHand());
 
         // record the adjustment
         InventoryAdjustment adjustment = new InventoryAdjustment();
@@ -65,7 +70,7 @@ public class InventoryAdjustmentService {
         adjustment.setPerformedByUser(performedByUser);
 
         InventoryAdjustment savedAdjustment = inventoryAdjustmentRepository.save(adjustment);
-
+        log.info("Inventory adjustment recorded successfully with id: {}", savedAdjustment.getId());
         return toResponse(savedAdjustment);
     }
 
@@ -77,6 +82,7 @@ public class InventoryAdjustmentService {
      * @throws RuntimeException if the variant is not found
      */
     public List<InventoryAdjustmentResponse> getAdjustmentsByVariant(Long variantId) {
+        log.info("Fetching inventory adjustments for variant id: {}", variantId);
         ProductVariant variant = productVariantRepository.findById(variantId)
             .orElseThrow(() -> new RuntimeException("Product variant not found"));
 

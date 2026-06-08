@@ -1,18 +1,26 @@
 package com.hwinterton.inventory_api.service;
 
-import org.hibernate.bytecode.internal.bytebuddy.BytecodeProviderImpl;
-import org.springframework.stereotype.Service;
 import java.util.List;
 
-import com.hwinterton.inventory_api.dto.category.CategoryResponse;
+import org.springframework.stereotype.Service;
+
 import com.hwinterton.inventory_api.dto.subcategory.SubcategoryRequest;
 import com.hwinterton.inventory_api.dto.subcategory.SubcategoryResponse;
+import com.hwinterton.inventory_api.model.Category;
 import com.hwinterton.inventory_api.model.Subcategory;
 import com.hwinterton.inventory_api.repository.CategoryRepository;
 import com.hwinterton.inventory_api.repository.ProductRepository;
 import com.hwinterton.inventory_api.repository.SubcategoryRepository;
-import com.hwinterton.inventory_api.model.Category;
 
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Service for subcategory business logic.
+ *
+ * <p>Handles subcategory retrieval, creation, updates, and safe deletion while
+ * keeping subcategories connected to their parent categories.</p>
+ */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Service
 public class SubcategoryService {
     // dependency fields
@@ -40,6 +48,7 @@ public class SubcategoryService {
      * @throws IllegalArgumentException
      */
     public SubcategoryResponse createSubcategory(SubcategoryRequest request) {
+        log.info("Attempting to create subcategory with name: {} under category id: {}", request.name(), request.categoryId());
         Category category = categoryRepository.findById(request.categoryId())
             .orElseThrow(() -> new RuntimeException("Category not found"));
 
@@ -53,6 +62,7 @@ public class SubcategoryService {
         subcategory.setCategory(category);
         // saving
         Subcategory savedSubcategory = subcategoryRepository.save(subcategory);
+        log.info("Subcategory created successfully with id: {}", savedSubcategory.getId());
         // returning transformed DTO object
         return new SubcategoryResponse(
             savedSubcategory.getId(),
@@ -68,6 +78,7 @@ public class SubcategoryService {
      * @return list of subcategory response DTOs
      */
     public List<SubcategoryResponse> getAllSubcategories(){
+        log.info("Fetching all subcategories");
         List<Subcategory> subcategories = subcategoryRepository.findAll();
 
         return subcategories.stream()
@@ -89,6 +100,7 @@ public class SubcategoryService {
      * @throws RuntimeException
      */
     public SubcategoryResponse getSubcategoryById (Long id){
+        log.info("Fetching subcategory with id: {}", id);
         Subcategory subcategory = subcategoryRepository.findById(id)    
             .orElseThrow(() -> new RuntimeException("Subcategory not found"));
 
@@ -111,6 +123,7 @@ public class SubcategoryService {
      * @throws IllegalArgumentException
      */
     public SubcategoryResponse updateSubcategory(Long id, SubcategoryRequest request) {
+        log.info("Attempting to update subcategory with id: {}", id);
         Subcategory subcategory = subcategoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Subcategory not found"));
 
@@ -119,7 +132,8 @@ public class SubcategoryService {
 
         if (subcategoryRepository.existsByNameAndCategory(request.name(), category)
                 && !subcategory.getName().equals(request.name())) {
-            throw new IllegalArgumentException("Subcategory name already exists under this category");
+            log.warn("Duplicate subcategory name attempted during update: {} under category id: {}", request.name(), request.categoryId());
+                throw new IllegalArgumentException("Subcategory name already exists under this category");
         }
 
         subcategory.setName(request.name());
@@ -127,7 +141,7 @@ public class SubcategoryService {
         subcategory.setCategory(category);
 
         Subcategory updatedSubcategory = subcategoryRepository.save(subcategory);
-
+        log.info("Subcategory updated successfully with id: {}", updatedSubcategory.getId());
         return new SubcategoryResponse(
                 updatedSubcategory.getId(),
                 updatedSubcategory.getName(),
@@ -145,14 +159,17 @@ public class SubcategoryService {
      * @throws IllegalStateException
      */
     public void deleteSubcategory(Long id) {
+        log.info("Attempting to delete subcategory with id: {}", id);
         Subcategory subcategory = subcategoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Subcategory not found"));
 
         // Subcategories with products attached should not be deleted.
         if (productRepository.existsBySubcategory(subcategory)) {
+            log.warn("Delete attempted on subcategory with existing products, id: {}", id);
             throw new IllegalStateException("Cannot delete subcategory that has products attached");
         }
 
         subcategoryRepository.delete(subcategory);
+        log.info("Subcategory deleted successfully with id: {}", id);
     }
 }

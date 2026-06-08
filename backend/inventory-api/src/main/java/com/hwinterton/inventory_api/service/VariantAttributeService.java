@@ -13,12 +13,15 @@ import com.hwinterton.inventory_api.repository.AttributeValueRepository;
 import com.hwinterton.inventory_api.repository.ProductVariantRepository;
 import com.hwinterton.inventory_api.repository.VariantAttributeRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Service for variant attribute business logic.
  *
  * <p>Handles retrieving, adding, and removing attribute values attached to
  * product variants.</p>
  */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Service
 public class VariantAttributeService {
 
@@ -44,6 +47,8 @@ public class VariantAttributeService {
      */
     @Transactional(readOnly = true)
     public List<VariantAttributeResponse> getAttributesForVariant(Long variantId) {
+        log.info("Fetching attributes for variant id: {}", variantId);
+        
         ProductVariant productVariant = findProductVariantById(variantId);
 
         return variantAttributeRepository.findByProductVariant(productVariant)
@@ -64,10 +69,14 @@ public class VariantAttributeService {
      */
     @Transactional
     public VariantAttributeResponse addAttributeToVariant(Long variantId, Long attributeValueId) {
+        log.info("Attempting to add attribute value id: {} to variant id: {}", attributeValueId, variantId);
+        
         ProductVariant productVariant = findProductVariantById(variantId);
         AttributeValue attributeValue = findAttributeValueById(attributeValueId);
 
         if (variantAttributeRepository.existsByProductVariantAndAttributeValue(productVariant, attributeValue)) {
+            log.warn("Duplicate attribute value id: {} attempted on variant id: {}", attributeValueId, variantId);
+            
             throw new IllegalStateException("Attribute value is already attached to this variant");
         }
 
@@ -82,6 +91,7 @@ public class VariantAttributeService {
                 );
 
         if (sameAttributeTypeExists) {
+            log.warn("Conflicting attribute type attempted on variant id: {}", variantId);
             throw new IllegalStateException("Variant already has a value for this attribute type");
         }
 
@@ -90,7 +100,8 @@ public class VariantAttributeService {
         variantAttribute.setAttributeValue(attributeValue);
 
         VariantAttribute savedVariantAttribute = variantAttributeRepository.save(variantAttribute);
-
+        log.info("Attribute value id: {} added successfully to variant id: {}", attributeValueId, variantId);
+        
         return toResponse(savedVariantAttribute);
     }
 
@@ -103,10 +114,12 @@ public class VariantAttributeService {
      */
     @Transactional
     public void removeAttributeFromVariant(Long variantAttributeId) {
+        log.info("Attempting to remove variant attribute with id: {}", variantAttributeId);
         VariantAttribute variantAttribute = variantAttributeRepository.findById(variantAttributeId)
                 .orElseThrow(() -> new RuntimeException("Variant attribute not found"));
 
         variantAttributeRepository.delete(variantAttribute);
+        log.info("Variant attribute removed successfully with id: {}", variantAttributeId);
     }
 
     // Method: finds a product variant once so the not-found logic stays consistent.
