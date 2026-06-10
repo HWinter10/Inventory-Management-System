@@ -29,6 +29,9 @@ import org.springframework.stereotype.Service;
 import com.hwinterton.inventory_api.model.User;
 import com.hwinterton.inventory_api.repository.UserRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Service // notifies spring so DaoAuthenticationProvider can find and use this class
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
@@ -42,7 +45,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         
         // look up user in database
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> {
+                log.warn("Authentication attempted for unknown username: {}", username);
+                throw new UsernameNotFoundException("User not found.");
+                });
 
         // convert role to GrantedAuthority
         GrantedAuthority authority = 

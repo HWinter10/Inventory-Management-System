@@ -14,6 +14,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Utility class for creating, reading, and validating JWT authentication tokens.
@@ -21,6 +22,7 @@ import io.jsonwebtoken.security.Keys;
  * <p>Stores the username, role, and password-change status in the token so protected
  * requests can be identified without storing server-side sessions.</p>
  */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Component
 public class JwtUtil {
 
@@ -44,7 +46,7 @@ public class JwtUtil {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .subject(username)
                 .claim("role", role.name())
                 .claim("mustChangePassword", mustChangePassword)
@@ -52,6 +54,10 @@ public class JwtUtil {
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
                 .compact();
+
+        log.info("Generated JWT for user: {} with role: {}", username, role);
+
+        return token;
     }
     // Method: parse token claims after signature verification
     private Claims extractAllClaims(String token) {
@@ -75,6 +81,7 @@ public class JwtUtil {
             Claims claims = extractAllClaims(token);
             return claims.getExpiration().after(new Date());
         } catch (JwtException | IllegalArgumentException e) {
+            log.warn("JWT validation failed: {}", e.getMessage());
             return false;
         }
     }

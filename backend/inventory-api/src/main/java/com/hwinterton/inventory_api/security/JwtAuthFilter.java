@@ -13,6 +13,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Handles JWT authentication for incoming API requests.
@@ -38,6 +39,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * 9. Continue request through filter chain
  * </pre>
  */
+@Slf4j // Lombok: logging feature helper, call replaced need for standard dependencies fields for Slf4j logging
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
@@ -49,7 +51,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    // Method - check request for JWT and set authentication if token is valid
+    /**
+     * Method - Checks each incoming request for a valid JWT Bearer token.
+     * 
+     * <p>If valid token is present, method loads matching user details and stores authentication
+     * object in Spring Security's context for the current request. If token is missing or invalid,
+     * request continues unauthenticated so Spring Security can make final access decision</p>
+     * 
+     * @param request the incoming HTTP request
+     * @param response outgoing HTTP response
+     * @param filterChain the remaining filter in request chain
+     * @throws ServletException if the filter chain fails while processing request
+     * @throws IOException if the filter chain fails while reading or writing request
+     */
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -61,6 +75,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // continue request if header is missing or not Bearer token
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.info("No Bearer token found for request: {}", request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
@@ -73,12 +88,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // continue request if username missing
         if (username == null) {
+            log.warn("JWT did not contain a username for request: {}", request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
 
         // continue request if token is invalid
         if (!jwtUtil.isTokenValid(token)) {
+            log.warn("Invalid JWT for username: {} on request: {}", username, request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
@@ -102,7 +119,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // set authenticated user in Spring Security
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // continue request
+        log.info("JWT authentication successful for user: {} on request: {}", username, request.getRequestURI());
+
+        // Continue request through the filter chain.
         filterChain.doFilter(request, response);
     }
 }
