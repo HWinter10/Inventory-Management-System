@@ -13,23 +13,21 @@ import com.hwinterton.inventory_api.dto.auth.LoginResponse;
 import com.hwinterton.inventory_api.service.AuthService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 /**
- * Exposes authentication endpoints to frontend
+ * REST controller for authentication endpoints under /api/auth
  * 
- * Delegates all business logic to AuthService
+ * <p>Receive authentication requests from the frontend and delegated
+ * login and password-change workflow to AutheService</p>
  */
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     // dependency field used to pass authentication work to AuthService
     private final AuthService authService;
-
-    // constructor for passing AuthService into controller
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
 
     /**
      * Receives login requests from frontend and returns JWT login data
