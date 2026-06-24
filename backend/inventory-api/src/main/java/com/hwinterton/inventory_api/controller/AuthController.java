@@ -18,8 +18,8 @@ import lombok.RequiredArgsConstructor;
 /**
  * REST controller for authentication endpoints under /api/auth
  * 
- * <p>Receive authentication requests from the frontend and delegated
- * login and password-change workflow to AutheService</p>
+ * <p>Receive authentication requests from the frontend and delegates
+ * login and password-change workflow to AuthService</p>
  */
 @RestController
 @RequestMapping("/api/auth")

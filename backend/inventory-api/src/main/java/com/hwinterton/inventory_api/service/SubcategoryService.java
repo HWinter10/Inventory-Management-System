@@ -93,6 +93,32 @@ public class SubcategoryService {
     } 
 
     /**
+     * Method: retrieves all subcategories under one category
+     *
+     * @param categoryId the parent category ID
+     * @return list of subcategory response DTOs under the category
+     * @throws RuntimeException if the category is not found
+     */
+    public List<SubcategoryResponse> getSubcategoriesByCategory(Long categoryId) {
+        log.info("Fetching subcategories under category id: {}", categoryId);
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        List<Subcategory> subcategories = subcategoryRepository.findByCategory(category);
+
+        return subcategories.stream()
+                .map(subcategory -> new SubcategoryResponse(
+                        subcategory.getId(),
+                        subcategory.getName(),
+                        subcategory.getDescription(),
+                        subcategory.getCategory().getId(),
+                        subcategory.getCategory().getName()
+                ))
+                .toList();
+    }
+
+    /**
      * Method: retrieves subcategory by Id
      *
      * @param id the subcategory ID
