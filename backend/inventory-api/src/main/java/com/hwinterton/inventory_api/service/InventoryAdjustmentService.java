@@ -47,14 +47,14 @@ public class InventoryAdjustmentService {
      * @return the recorded adjustment as a response DTO
      * @throws RuntimeException if the variant or user is not found
      */
-    public InventoryAdjustmentResponse recordAdjustment(InventoryAdjustmentRequest request, Long performedByUserId) {
-        log.info("Redording inventory adjustment for variant id: {} by user id: {}", request.variantId(), performedByUserId);
+    public InventoryAdjustmentResponse recordAdjustment(InventoryAdjustmentRequest request, String performedByUsername) {
+        log.info("Redording inventory adjustment for variant id: {} by user id: {}", request.variantId(), performedByUsername);
         // find the variant
         ProductVariant variant = productVariantRepository.findById(request.variantId())
             .orElseThrow(() -> new RuntimeException("Product variant not found"));
 
         // find the user performing the adjustment
-        User performedByUser = userRepository.findById(performedByUserId)
+        User performedByUser = userRepository.findByUsername(performedByUsername)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
         // apply the change to quantity on hand

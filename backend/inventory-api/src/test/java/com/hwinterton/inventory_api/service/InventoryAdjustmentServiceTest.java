@@ -89,7 +89,7 @@ public class InventoryAdjustmentServiceTest {
         when(productVariantRepository.findById(1L))
             .thenReturn(Optional.of(variant));
 
-        when(userRepository.findById(1L))
+        when(userRepository.findByUsername("owner"))
             .thenReturn(Optional.of(user));
 
         when(productVariantRepository.save(any(ProductVariant.class)))
@@ -98,14 +98,14 @@ public class InventoryAdjustmentServiceTest {
         when(inventoryAdjustmentRepository.save(any(InventoryAdjustment.class)))
             .thenReturn(savedAdjustment);
 
-        InventoryAdjustmentResponse response = inventoryAdjustmentService.recordAdjustment(request, 1L);
+        InventoryAdjustmentResponse response = inventoryAdjustmentService.recordAdjustment(request, "owner");
 
         assertEquals(1L, response.variantId());
         assertEquals(10, response.changeAmount());
         assertEquals("Restock", response.reason());
 
         verify(productVariantRepository).findById(1L);
-        verify(userRepository).findById(1L);
+        verify(userRepository).findByUsername("owner");
         verify(productVariantRepository).save(any(ProductVariant.class));
         verify(inventoryAdjustmentRepository).save(any(InventoryAdjustment.class));
     }
@@ -118,10 +118,10 @@ public class InventoryAdjustmentServiceTest {
         when(productVariantRepository.findById(99L))
             .thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> inventoryAdjustmentService.recordAdjustment(request, 1L));
+        assertThrows(RuntimeException.class, () -> inventoryAdjustmentService.recordAdjustment(request, "owner"));
 
         verify(productVariantRepository).findById(99L);
-        verify(userRepository, never()).findById(any());
+        verify(userRepository, never()).findByUsername(any());
         verify(inventoryAdjustmentRepository, never()).save(any());
     }
 
@@ -134,13 +134,13 @@ public class InventoryAdjustmentServiceTest {
         when(productVariantRepository.findById(1L))
             .thenReturn(Optional.of(variant));
 
-        when(userRepository.findById(99L))
+        when(userRepository.findByUsername("nonexistent"))
             .thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> inventoryAdjustmentService.recordAdjustment(request, 99L));
+        assertThrows(RuntimeException.class, () -> inventoryAdjustmentService.recordAdjustment(request, "nonexistent"));
 
         verify(productVariantRepository).findById(1L);
-        verify(userRepository).findById(99L);
+        verify(userRepository).findByUsername("nonexistent");
         verify(inventoryAdjustmentRepository, never()).save(any());
     }
 

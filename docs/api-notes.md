@@ -33,11 +33,11 @@ POST /api/categories -> creates a category
     Permissions: Owner, Manager
 PATCH /api/categories/{id} -> updates category fields
     Permissions: Owner, Manager
+DELETE /api/categories/{id} -> deletes category field
+    Permission: Owner
 
 ### Subcategories
-GET /api/subcategories -> returns all subcategories
-    Permissions: Owner, Manager, Staff
-GET /api/subcategories/{id}
+GET /api/subcategories/{id} -> returns all subcategories
     Permissions: Owner, Manager, Staff
 GET /api/categories/{id}/subcategories
     Permissions: Owner, Manager, Staff
@@ -45,6 +45,8 @@ POST /api/subcategories
     Permissions: Owner, Manager
 PATCH /api/subcategories/{id}
     Permissions: Owner, Manager
+DELETE /api/subcategories/{id} -> deleted subcategory field
+    Permissions: Owner
 
 ### Products
 GET /api/products -> returns all base products
@@ -57,18 +59,24 @@ POST /api/products -> creates product
     Permissions: Owner, Manager
 PATCH /api/products/{id} -> updates product fields
     Permissions: Owner, Manager
+DELETE /api/products/{id} -> deletes product field
+    Permission: Owner, Manager
 
 ### Product Variants
 GET /api/variants -> returns all product variants
     Permissions: Owner, Manager, Staff
 GET /api/variants/{id} -> returns variant by id
     Permissions: Owner, Manager, Staff
+GET /api/variants/low-stock -> returns all low stock variants
+    Permission: Owner, Manager
 POST /api/variants -> creates product variant
     Permissions: Owner, Manager
 PATCH /api/variants/{id} -> updates variant fields
     Permissions: Owner, Manager
 PATCH /api/variants/{id}/threshold - updated low stock threshold 
     Permissions: Owner, Manager
+DELETE /api/variants/{id} -> deletes product variant field
+    Permission: Owner, Manager
 
 ### Inventory Adjustment
 POST /api/inventory-adjustments -> creates inventory adjustment event
